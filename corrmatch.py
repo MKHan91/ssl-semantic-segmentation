@@ -1,6 +1,8 @@
+import os
+os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"
+
 import argparse
 import logging
-import os
 import os.path as osp
 import pprint
 
@@ -37,18 +39,22 @@ parser.add_argument('--unlabeled_id_path', type=str, default=osp.join(osp.dirnam
 parser.add_argument('--val_id_path', type=str, default=osp.join(osp.dirname(__file__), "partitions/cityscapes/val.txt"))
 parser.add_argument('--local_rank', default=0, type=int)
 parser.add_argument('--port', default=0, type=int)
-parser.add_argument('--save_path', default=osp.join(osp.dirname(__file__), 'experiments/models/corrmatch_ver3'), type=str)
-parser.add_argument('--log_path', default=osp.join(osp.dirname(__file__), 'experiments/logs/corrmatch_ver3'), type=str)
+parser.add_argument('--save_path', default=osp.join(osp.dirname(__file__), 'experiments/models/1019_corrmatch_ver3'), type=str)
+parser.add_argument('--log_path', default=osp.join(osp.dirname(__file__), 'experiments/logs/1019_corrmatch_ver3'), type=str)
 
 def init_seeds(seed=0, cuda_deterministic=False):
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)  # 싱글 GPU 시드 고정
+    
     cudnn.enabled = True
     # Speed-reproducibility tradeoff https://pytorch.org/docs/stable/notes/randomness.html
     if cuda_deterministic:  # slower, more reproducible
         cudnn.deterministic = True
         cudnn.benchmark = False
+        torch.use_deterministic_algorithms(True, warn_only=True)
+        
     else:  # faster, less reproducible
         cudnn.deterministic = False
         cudnn.benchmark = True
@@ -70,7 +76,8 @@ def main():
 
     if rank == 0:
         os.makedirs(args.save_path, exist_ok=True)
-    init_seeds(0, False)
+    # init_seeds(0, False)
+    init_seeds(0, True)
 
     model = DeepLabV3Plus(cfg)
     # sam = sam_model_registry["vit_b"](checkpoint="sam/checkpoints/sam_vit_b.pth")

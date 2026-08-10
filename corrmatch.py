@@ -26,6 +26,7 @@ from util.dist_helper import setup_distributed
 from util.thresh_helper import ThreshController
 from einops import rearrange
 import random
+from torch.utils.tensorboard import SummaryWriter
 
 # os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
@@ -36,7 +37,8 @@ parser.add_argument('--unlabeled_id_path', type=str, default=osp.join(osp.dirnam
 parser.add_argument('--val_id_path', type=str, default=osp.join(osp.dirname(__file__), "partitions/cityscapes/val.txt"))
 parser.add_argument('--local_rank', default=0, type=int)
 parser.add_argument('--port', default=0, type=int)
-parser.add_argument('--save_path', default=osp.join(osp.dirname(__file__), 'experiments/models/corrmatch_ver3_2'), type=str)
+parser.add_argument('--save_path', default=osp.join(osp.dirname(__file__), 'experiments/models/corrmatch_ver3'), type=str)
+parser.add_argument('--log_path', default=osp.join(osp.dirname(__file__), 'experiments/logs/corrmatch_ver3'), type=str)
 
 def init_seeds(seed=0, cuda_deterministic=False):
     random.seed(seed)
@@ -78,6 +80,8 @@ def main():
         logger.info('Total params: {:.1f}M\n'.format(utils.count_params(model)))
         utils.compute_flops(cfg, model, logger)
 
+    # 텐서보드 추가
+    tb_writer = SummaryWriter(log_dir=args.log_path)
 
     optimizer = SGD([{'params': model.backbone.parameters(), 'lr': cfg['lr']},
                      {'params': [param for name, param in model.named_parameters() if 'backbone' not in name],
@@ -178,7 +182,7 @@ def main():
                 (img_u_w, img_u_s1, _, ignore_mask, cutmix_box1, _),
                 (img_u_w_mix, img_u_s1_mix, _, ignore_mask_mix, _, _)) in enumerate(loader):
 
-            # if i == 1: break
+            if i == 1: break
             
             img_x, mask_x = img_x.cuda(), mask_x.cuda()
             img_u_w = img_u_w.cuda()
@@ -340,6 +344,16 @@ def main():
                     total_loss_w_fp / (i + 1), total_mask_ratio / (i + 1), total_loss_corr_u / (i + 1)))
                 tbar.update(1)
 
+        # Tensorboard 추가
+        tb_writer.add_scalar('Loss/total_loss', total_loss / (i + 1), epoch)
+        tb_writer.add_scalar('Loss/loss_x', total_loss_x / (i + 1), epoch)
+        tb_writer.add_scalar('Loss/loss_s', total_loss_s / (i + 1), epoch)
+        tb_writer.add_scalar('Loss/loss_kl', total_loss_kl / (i + 1), epoch)
+        tb_writer.add_scalar('Loss/loss_w_fp', total_loss_w_fp / (i + 1), epoch)
+        tb_writer.add_scalar('Loss/loss_corr_ce', total_loss_corr_ce / (i + 1), epoch)
+        tb_writer.add_scalar('Loss/loss_corr_u', total_loss_corr_u / (i + 1), epoch)
+
+
         if accum_counter > 0:
             scaler.step(optimizer)
             scaler.update()
@@ -356,7 +370,8 @@ def main():
         eval_mode = 'original'
         
         torch.cuda.empty_cache()
-        res_val = evaluate(model, rank, valloader, eval_mode, cfg)
+        # res_val = evaluate(model, rank, valloader, eval_mode, cfg)
+        res_val = evaluate(model, valloader, eval_mode, cfg)
         mIOU = res_val['mIOU']
         class_IOU = res_val['iou_class']
         if rank != 0:
@@ -382,6 +397,8 @@ def main():
         if rank != 0:
             torch.distributed.barrier()
         torch.cuda.empty_cache()
+    
+    tb_writer.close()
 
 
 if __name__ == '__main__':

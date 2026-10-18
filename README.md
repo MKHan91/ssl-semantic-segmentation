@@ -105,25 +105,32 @@ data/
 ```
 </details>
 
-### 2. 학습 실행 (Training)
+### 2. 파라미터 설정
 
-단일 RTX 3090 (24GB) 환경에서 FlowAttention 학습을 실행합니다.
+학습 및 평가에 필요한 하이퍼파라미터, 데이터셋 경로, 모델 옵션 등은 `configuration.py`에서 수정할 수 있습니다.
 
-```bash
-# Cityscapes 데이터셋 기반 학습 실행
-python ssl_main.py
+```python
+# configuration.py 예시
+DATASET_NAME = "pascal_voc"
+BACKBONE = "resnet50"
+PRETRAINED = False
+BATCH_SIZE = 16
+LEARNING_RATE = 0.0005
 ```
 
-### 3. 평가 및 시각화 (Evaluation)
+### 3. 학습 및 평가 실행 (Main Pipeline)
 
-학습된 가중치 모델을 불러와 mIoU를 측정하고 결과 마스크 시각화를 생성합니다.
+단일 RTX 3090 (24GB) 환경에서 `ssl_main.py`를 통해 파이프라인을 실행합니다.
 
 ```bash
+# 학습(Training) 실행
+python ssl_main.py
+
+# 평가(Evaluation) 실행
 python ssl_inference.py
 ```
 
 <br>
-
 ## 📊 정량적 성능 비교 (Benchmark Results)
 
 | Method | Backbone | Pretrained | Resolution | Effective Batch | LR | Precision | Optimizer | mIoU (%) |

@@ -141,10 +141,10 @@ class TrainConfig:
 단일 RTX 3090 (24GB) 환경에서 `ssl_main.py`를 통해 파이프라인을 실행합니다.
 
 ```bash
-# 학습(Training) 실행
+# 학습 실행
 python ssl_main.py
 
-# 평가(Evaluation) 실행
+# 추론 실행
 python ssl_inference.py
 ```
 

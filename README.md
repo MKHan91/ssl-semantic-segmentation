@@ -5,8 +5,8 @@
 **Single-GPU Trainable Lightweight Semi-Supervised Semantic Segmentation Framework**
 
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-3776AB.svg?style=flat-square&logo=python&logoColor=white)](https://www.python.org/downloads/)
-[![PyTorch 2.0+](https://img.shields.io/badge/PyTorch-2.0+-EE4C2C.svg?style=flat-square&logo=pytorch&logoColor=white)](https://pytorch.org/)
-[![CUDA 11.8+](https://img.shields.io/badge/CUDA-11.8+-76B900.svg?style=flat-square&logo=nvidia&logoColor=white)](#)
+[![PyTorch 2.9.0](https://img.shields.io/badge/PyTorch-2.0+-EE4C2C.svg?style=flat-square&logo=pytorch&logoColor=white)](https://pytorch.org/)
+[![CUDA 12.6](https://img.shields.io/badge/CUDA-11.8+-76B900.svg?style=flat-square&logo=nvidia&logoColor=white)](#)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 
 <p align="center">

@@ -110,12 +110,30 @@ data/
 학습 및 평가에 필요한 하이퍼파라미터, 데이터셋 경로, 모델 옵션 등은 `configuration.py`에서 수정할 수 있습니다.
 
 ```python
-# configuration.py 예시
-DATASET_NAME = "pascal_voc"
-BACKBONE = "resnet50"
-PRETRAINED = False
-BATCH_SIZE = 16
-LEARNING_RATE = 0.0005
+# configuration.py (예시)
+from dataclasses import dataclass
+
+@dataclass
+class ModelConfig:
+    backbone: str = "resnet50"
+    num_classes: int = 19  # Cityscapes: 19, Pascal VOC: 21
+
+@dataclass
+class TrainConfig:
+    dataset: str = "cityscapes"
+    model_name: str = "flowAtt_v1.7.0"
+    
+    # Optimizer & Scheduler
+    optimizer: str = "Adam"
+    scheduler: str = "cosineDecay"
+    
+    # Hyperparameters
+    batch_size: int = 4          # Step당 Batch Size
+    accumulation_steps: int = 4  # Effective Batch Size = 4 x 4 = 16
+    lr: float = 5e-4             # Learning Rate (0.0005)
+    num_epochs: int = 800
+    crop_size: int = 448
+...
 ```
 
 ### 3. 학습 및 평가 실행 (Main Pipeline)
